@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Quest: Module 5 Review</title>
+    <title>Module 5 Math Quest Review</title>
+    <!-- KaTeX CSS & JS for formatting LaTeX fractions correctly -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
     <style>
         :root {
             --bg-color: #1a1a2e;
@@ -30,11 +35,11 @@
 
         #game-container {
             width: 90%;
-            max-width: 800px;
+            max-width: 850px;
             margin: 20px auto;
             background-color: var(--panel-bg);
             border-radius: 12px;
-            padding: 20px;
+            padding: 25px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
             border: 2px solid var(--accent-color);
         }
@@ -56,16 +61,6 @@
             border-radius: 8px;
         }
 
-        .hero-section {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .hero-avatar {
-            font-size: 4rem;
-            margin-bottom: 10px;
-        }
-
         .progress-bar {
             width: 100%;
             height: 15px;
@@ -83,12 +78,13 @@
         }
 
         .question-box {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             margin-bottom: 20px;
-            line-height: 1.5;
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
+            line-height: 1.6;
+            background: rgba(0,0,0,0.25);
+            padding: 20px;
             border-radius: 8px;
+            min-height: 80px;
         }
 
         .options-grid {
@@ -102,6 +98,23 @@
             .options-grid {
                 grid-template-columns: 1fr;
             }
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-box input, .input-box select {
+            padding: 12px 15px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            border: 2px solid var(--accent-color);
+            background: #0f172a;
+            color: #fff;
+            outline: none;
         }
 
         .btn {
@@ -141,9 +154,11 @@
             margin-bottom: 15px;
         }
 
-        .controls {
+        .nav-controls {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
         }
 
         .hidden {
@@ -156,12 +171,19 @@
 
         .screen h1 {
             color: var(--gold);
-            font-size: 2.5rem;
+            font-size: 2.3rem;
         }
 
-        .screen p {
-            font-size: 1.2rem;
-            line-height: 1.6;
+        .matching-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .matching-table th, .matching-table td {
+            border: 1px solid var(--accent-color);
+            padding: 10px;
+            text-align: center;
         }
     </style>
 </head>
@@ -170,17 +192,16 @@
 <div id="game-container">
     <!-- START SCREEN -->
     <div id="start-screen" class="screen">
-        <h1>⚔️ Math Quest: Module 5 ⚔️</h1>
-        <p>Master Powers, Order of Operations, Expressions, GCF, LCM & the Distributive Property!</p>
-        <div class="hero-avatar">🧙‍♂️</div>
-        <p>Help the Hero complete 12 math challenges to restore balance to the realm.</p>
+        <h1>⚔️ Module 5 Expressions Master Quest ⚔️</h1>
+        <p>Complete 20 comprehensive challenges covering Exponents, Order of Operations, Algebraic Expressions, GCF, and Word Problems!</p>
+        <div style="font-size: 4rem; margin: 15px 0;">🧙‍♂️</div>
         <button class="btn" style="font-size: 1.3rem; padding: 15px 30px;" onclick="startGame()">Begin Quest</button>
     </div>
 
     <!-- PLAY SCREEN -->
     <div id="play-screen" class="hidden">
         <div class="header">
-            <div class="stat-box">Level <span id="level-num">1</span> / 12</div>
+            <div class="stat-box">Question <span id="level-num">1</span> / 20</div>
             <div class="stat-box">⭐ Score: <span id="score-num">0</span></div>
         </div>
 
@@ -188,116 +209,211 @@
             <div id="progress-fill" class="progress-fill"></div>
         </div>
 
-        <div class="hero-section">
-            <div id="hero-status" class="hero-avatar">🧙‍♂️</div>
+        <div id="question" class="question-box"></div>
+
+        <!-- Multiple Choice Options -->
+        <div id="options" class="options-grid hidden"></div>
+
+        <!-- Text Answer Box -->
+        <div id="text-input-container" class="input-box hidden">
+            <input type="text" id="user-text-input" placeholder="Type your answer here..." autocomplete="off">
+            <button class="btn" onclick="submitTextAnswer()">Submit Answer</button>
         </div>
 
-        <div id="question" class="question-box">Question text goes here...</div>
-
-        <div id="options" class="options-grid">
-            <!-- Option buttons dynamically inserted here -->
+        <!-- Matching Table Box -->
+        <div id="matching-container" class="input-box hidden">
+            <table class="matching-table">
+                <thead>
+                    <tr>
+                        <th>Part</th>
+                        <th>Select Category</th>
+                    </tr>
+                </thead>
+                <tbody id="matching-tbody"></tbody>
+            </table>
+            <button class="btn" onclick="submitMatchingAnswer()">Submit Matching</button>
         </div>
 
         <div id="feedback" class="feedback-box"></div>
 
-        <div class="controls">
-            <button id="next-btn" class="btn hidden" onclick="nextQuestion()">Next Challenge ➔</button>
+        <div class="nav-controls">
+            <button id="prev-btn" class="btn" onclick="prevQuestion()">⬅️ Previous</button>
+            <button id="next-btn" class="btn" onclick="nextQuestion()">Next ➔</button>
         </div>
     </div>
 
     <!-- END SCREEN -->
     <div id="end-screen" class="screen hidden">
-        <h1>🎉 Quest Completed! 🎉</h1>
-        <div class="hero-avatar" id="final-avatar">🏆</div>
-        <p>Final Score: <span id="final-score" style="color: var(--gold); font-weight: bold;">0</span> / 1200</p>
+        <h1>🎉 Quest Complete! 🎉</h1>
+        <div style="font-size: 4rem;" id="final-avatar">🏆</div>
+        <p>Final Score: <span id="final-score" style="color: var(--gold); font-weight: bold;">0</span> / 2000</p>
         <p id="final-message"></p>
-        <button class="btn" style="font-size: 1.2rem; padding: 12px 25px;" onclick="restartGame()">Play Again</button>
+        <button class="btn" style="font-size: 1.2rem; padding: 12px 25px;" onclick="startGame()">Try Again</button>
     </div>
 </div>
 
 <script>
     const questions = [
+        // --- EXPONENT QUESTIONS (MULTIPLE CHOICE) ---
         {
-            q: "Write the following product as an expression using exponents: 4 × 4 × 4 × 4 × 4",
-            options: ["4 × 5", "4⁵", "5⁴", "1,024"],
+            type: "mc",
+            q: "Write $4 \\times 4 \\times 4$ using an exponent.",
+            options: ["$4 \\times 3$", "$4^3$", "$3^4$", "$12$"],
             answer: 1,
-            explain: "Base is 4, and it is multiplied 5 times, so it is 4⁵."
+            explain: "The base is 4, and it is multiplied 3 times, so it is written as $4^3$."
         },
         {
-            q: "Which expression is equivalent to 3⁶?",
-            options: ["3 × 6", "3 + 3 + 3 + 3 + 3 + 3", "3 × 3 × 3 × 3 × 3 × 3", "729 only"],
-            answer: 2,
-            explain: "3⁶ represents the base 3 multiplied by itself 6 times."
-        },
-        {
-            q: "Evaluate the expression: (1/3)² · (3 · 7 - 3) + 2³",
-            options: ["10", "18", "12", "16"],
+            type: "mc",
+            q: "Write $\\left(\\frac{2}{9}\\right) \\cdot \\left(\\frac{2}{9}\\right) \\cdot \\left(\\frac{2}{9}\\right) \\cdot \\left(\\frac{2}{9}\\right)$ using an exponent.",
+            options: ["$\\left(\\frac{2}{9}\\right)^4$", "$\\frac{8}{36}$", "$4^{\\frac{2}{9}}$", "$\\left(\\frac{2}{9}\\right) \\times 4$"],
             answer: 0,
-            explain: "(1/3)² = 1/9. (3·7 - 3) = 18. 2³ = 8. So, (1/9)(18) + 8 = 2 + 8 = 10."
+            explain: "The base $\\frac{2}{9}$ is multiplied 4 times, written as $\\left(\\frac{2}{9}\\right)^4$."
         },
         {
-            q: "Evaluate the expression: 64 ÷ (15 - 7) × 2 - 9",
-            options: ["7", "1", "16", "23"],
-            answer: 0,
-            explain: "Parentheses first: 15 - 7 = 8. Then left-to-right: 64 ÷ 8 = 8; 8 × 2 = 16; 16 - 9 = 7."
-        },
-        {
-            q: "Identify the like terms in the expression: 5s + 7s² + 9s + 8",
-            options: ["5s and 7s²", "5s and 9s", "7s² and 8", "5, 7, and 9"],
+            type: "mc",
+            q: "Write $(1.625) \\times (1.625)$ using an exponent.",
+            options: ["$(1.625) \\times 2$", "$(1.625)^2$", "$2^{1.625}$", "$3.25$"],
             answer: 1,
-            explain: "Like terms have the exact same variable and power. 5s and 9s are like terms."
+            explain: "The base 1.625 is multiplied 2 times, written as $(1.625)^2$."
+        },
+
+        // --- WRITING EXPRESSIONS QUESTIONS (TEXT INPUT) ---
+        {
+            type: "text",
+            q: "Write an algebraic expression for: 'twelve fewer than the librarian's number of books, $b$'.",
+            accepted: ["b-12", "b - 12"],
+            explain: "'Fewer than' switches the order, so it is written as $b - 12$."
         },
         {
-            q: "Which algebraic expression represents 'fifteen fewer than the librarian's number of books, b'?",
-            options: ["15 - b", "b - 15", "15b", "b / 15"],
-            answer: 1,
-            explain: "'Fewer than' switches the order, so 15 fewer than b is written as b - 15."
+            type: "text",
+            q: "Write an algebraic expression for: 'the sum of $x$ and 2'.",
+            accepted: ["x+2", "x + 2", "2+x", "2 + x"],
+            explain: "'Sum' means addition, so it is written as $x + 2$."
         },
         {
-            q: "Evaluate the algebraic expression 4x + 2 when x = 1/3.",
-            options: ["3 1/3", "4 1/3", "2 1/3", "1 1/3"],
-            answer: 0,
-            explain: "4(1/3) + 2 = 4/3 + 2 = 1 1/3 + 2 = 3 1/3."
+            type: "text",
+            q: "Write an algebraic expression for: 'the product of 4 and $y$'.",
+            accepted: ["4y", "4*y", "4(y)", "4 . y"],
+            explain: "'Product' means multiplication, written directly as $4y$."
         },
         {
-            q: "What is the Greatest Common Factor (GCF) of 18 and 12?",
-            options: ["3", "6", "12", "36"],
-            answer: 1,
-            explain: "Factors of 18: 1, 2, 3, 6, 9, 18. Factors of 12: 1, 2, 3, 4, 6, 12. GCF is 6."
+            type: "text",
+            q: "Write an algebraic expression for: 'the quotient of 30 and 5'.",
+            accepted: ["30/5", "30 / 5"],
+            explain: "'Quotient' means division, written as $\\frac{30}{5}$ or $30/5$."
         },
         {
-            q: "What is the Least Common Multiple (LCM) of 6 and 8?",
-            options: ["2", "12", "24", "48"],
-            answer: 2,
-            explain: "Multiples of 6: 6, 12, 18, 24... Multiples of 8: 8, 16, 24... Smallest shared is 24."
+            type: "text",
+            q: "Write an algebraic expression for: 'four less than seven times Lynn's age, $a$'.",
+            accepted: ["7a-4", "7a - 4", "7*a-4", "7*a - 4"],
+            explain: "'Seven times Lynn's age' is $7a$, and 'four less than' subtracts 4: $7a - 4$."
+        },
+
+        // --- EVALUATING EXPRESSIONS QUESTIONS (TEXT INPUT) ---
+        {
+            type: "text",
+            q: "Evaluate $8x$ when $x = \\frac{3}{4}$.",
+            accepted: ["6"],
+            explain: "$8 \\cdot \\left(\\frac{3}{4}\\right) = \\frac{24}{4} = 6$."
         },
         {
-            q: "Use the GCF to factor the expression: 45x + 75",
-            options: ["5(9x + 15)", "15(3x + 5)", "3(15x + 25)", "45(x + 75)"],
-            answer: 1,
-            explain: "The GCF of 45 and 75 is 15. Factoring out 15 gives 15(3x + 5)."
+            type: "text",
+            q: "Evaluate $y^2$ when $y = 2.5$.",
+            accepted: ["6.25"],
+            explain: "$(2.5)^2 = 2.5 \\times 2.5 = 6.25$."
         },
         {
-            q: "Which property is illustrated by the statement: a + b = b + a?",
-            options: ["Associative Property", "Distributive Property", "Identity Property", "Commutative Property"],
-            answer: 3,
-            explain: "The Commutative Property states that changing the order of addition does not change the sum."
+            type: "text",
+            q: "Evaluate $x - y$ when $x = 15$ and $y = 10$.",
+            accepted: ["5"],
+            explain: "$15 - 10 = 5$."
         },
         {
-            q: "Simplify the algebraic expression by combining like terms: 4a² + (1/3)a + 5 + d² + 4 + (1/3)a",
-            options: ["4a² + (2/3)a + d² + 9", "4a² + (1/9)a + d² + 9", "4a² + (2/3)a + 9", "5a² + d² + 9"],
-            answer: 0,
-            explain: "Combine like terms: (1/3)a + (1/3)a = (2/3)a, and constants 5 + 4 = 9. Result: 4a² + (2/3)a + d² + 9."
+            type: "text",
+            q: "Evaluate $4x + 5$ when $x = 10$.",
+            accepted: ["45"],
+            explain: "$4(10) + 5 = 40 + 5 = 45$."
+        },
+
+        // --- MATCHING TERMS QUESTIONS ---
+        {
+            type: "matching",
+            q: "Classify each part of the expression: $5s + 7s^2 + 9s + 8$",
+            items: [
+                { term: "5s and 9s", correct: "Like Terms" },
+                { term: "5, 7, 9", correct: "Coefficients" },
+                { term: "8", correct: "Constants" }
+            ],
+            optionsList: ["Terms", "Like Terms", "Coefficients", "Constants"],
+            explain: "$5s$ and $9s$ share the same variable. $5, 7, 9$ are multiplying variables (coefficients), and $8$ is a constant."
+        },
+        {
+            type: "matching",
+            q: "Classify each part of the expression: $4e + 7e + 5 + 2e$",
+            items: [
+                { term: "4e, 7e, 5, 2e", correct: "Terms" },
+                { term: "4, 7, 2", correct: "Coefficients" },
+                { term: "5", correct: "Constants" }
+            ],
+            optionsList: ["Terms", "Like Terms", "Coefficients", "Constants"],
+            explain: "All separated elements are terms, numbers with variables are coefficients, and standalone numbers are constants."
+        },
+        {
+            type: "matching",
+            q: "Classify each part of the expression: $3x + 2y + 5x - y + 8$",
+            items: [
+                { term: "3x and 5x", correct: "Like Terms" },
+                { term: "3, 2, 5, -1", correct: "Coefficients" },
+                { term: "8", correct: "Constants" }
+            ],
+            optionsList: ["Terms", "Like Terms", "Coefficients", "Constants"],
+            explain: "$3x$ and $5x$ are like terms. Coefficients are $3, 2, 5, -1$. $8$ is the constant."
+        },
+
+        // --- PEMDAS QUESTIONS (TEXT INPUT) ---
+        {
+            type: "text",
+            q: "Evaluate using Order of Operations: $10 - 2 + 8$",
+            accepted: ["16"],
+            explain: "Addition and Subtraction go left to right: $10 - 2 = 8$, then $8 + 8 = 16$."
+        },
+        {
+            type: "text",
+            q: "Evaluate using Order of Operations: $64 \\div (15 - 7) \\times 2 - 9$",
+            accepted: ["7"],
+            explain: "Parentheses first: $15 - 7 = 8$. Then $64 \\div 8 = 8$, $8 \\times 2 = 16$, $16 - 9 = 7$."
+        },
+        {
+            type: "text",
+            q: "Evaluate using Order of Operations: $(3 + 2)^2 + 20 \\cdot \\frac{1}{2} - 2 + 5$",
+            accepted: ["38"],
+            explain: "$(5)^2 + 10 - 2 + 5 = 25 + 10 - 2 + 5 = 38$."
+        },
+
+        // --- WORD PROBLEMS (LIKE REVIEW #4) ---
+        {
+            type: "text",
+            q: "Raven sells face wash for $27, face lotion for $22, and makeup trials for $4. At a party, she sold 6 face washes, 3 lotions, and 5 makeup trials. Calculate the total cost.",
+            accepted: ["248", "$248"],
+            explain: "$6(27) + 3(22) + 5(4) = 162 + 66 + 20 = 248$ dollars."
+        },
+        {
+            type: "text",
+            q: "A student council sold 62 muffins for $0.75 each, 74 brownies for $1.25 each, and 35 cupcakes for $1.75 each. Calculate the total amount raised.",
+            accepted: ["200.25", "$200.25"],
+            explain: "$62(0.75) + 74(1.25) + 35(1.75) = 46.50 + 92.50 + 61.25 = 200.25$ dollars."
         }
     ];
 
     let currentIdx = 0;
-    let score = 0;
-    let selected = false;
+    let scores = Array(questions.length).fill(0);
+    let answered = Array(questions.length).fill(null);
 
     function startGame() {
         currentIdx = 0;
-        score = 0;
+        scores = Array(questions.length).fill(0);
+        answered = Array(questions.length).fill(null);
+
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('end-screen').classList.add('hidden');
         document.getElementById('play-screen').classList.remove('hidden');
@@ -305,57 +421,147 @@
     }
 
     function showQuestion() {
-        selected = false;
         const q = questions[currentIdx];
         document.getElementById('level-num').innerText = currentIdx + 1;
-        document.getElementById('score-num').innerText = score;
-        document.getElementById('progress-fill').style.width = `${((currentIdx) / questions.length) * 100}%`;
-        document.getElementById('question').innerText = q.q;
+        
+        let totalScore = scores.reduce((a, b) => a + b, 0);
+        document.getElementById('score-num').innerText = totalScore;
+        document.getElementById('progress-fill').style.width = `${((currentIdx + 1) / questions.length) * 100}%`;
+        
+        const qBox = document.getElementById('question');
+        qBox.innerHTML = q.q;
+
         document.getElementById('feedback').innerText = '';
-        document.getElementById('next-btn').classList.add('hidden');
+        
+        // Toggle input display types
+        document.getElementById('options').classList.add('hidden');
+        document.getElementById('text-input-container').classList.add('hidden');
+        document.getElementById('matching-container').classList.add('hidden');
 
-        const optsContainer = document.getElementById('options');
-        optsContainer.innerHTML = '';
+        if (q.type === 'mc') {
+            const optsContainer = document.getElementById('options');
+            optsContainer.classList.remove('hidden');
+            optsContainer.innerHTML = '';
 
-        q.options.forEach((opt, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'btn';
-            btn.innerText = opt;
-            btn.onclick = () => selectOption(idx);
-            optsContainer.appendChild(btn);
-        });
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerHTML = opt;
+                if (answered[currentIdx] !== null) {
+                    btn.disabled = true;
+                    if (idx === q.answer) btn.classList.add('btn-correct');
+                    if (answered[currentIdx] === idx && idx !== q.answer) btn.classList.add('btn-wrong');
+                } else {
+                    btn.onclick = () => selectMCOption(idx);
+                }
+                optsContainer.appendChild(btn);
+            });
+        } else if (q.type === 'text') {
+            const container = document.getElementById('text-input-container');
+            container.classList.remove('hidden');
+            const input = document.getElementById('user-text-input');
+            input.value = answered[currentIdx] !== null ? answered[currentIdx].userVal : '';
+            input.disabled = answered[currentIdx] !== null;
+        } else if (q.type === 'matching') {
+            const container = document.getElementById('matching-container');
+            container.classList.remove('hidden');
+            const tbody = document.getElementById('matching-tbody');
+            tbody.innerHTML = '';
+
+            q.items.forEach((item, idx) => {
+                const tr = document.createElement('tr');
+                let optionsHTML = q.optionsList.map(o => `<option value="${o}">${o}</option>`).join('');
+                tr.innerHTML = `
+                    <td>${item.term}</td>
+                    <td>
+                        <select id="select-match-${idx}" ${answered[currentIdx] !== null ? 'disabled' : ''}>
+                            <option value="">-- Select --</option>
+                            ${optionsHTML}
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                if (answered[currentIdx] !== null) {
+                    document.getElementById(`select-match-${idx}`).value = answered[currentIdx].userVals[idx];
+                }
+            });
+        }
+
+        // Show feedback if already answered
+        if (answered[currentIdx] !== null) {
+            if (scores[currentIdx] > 0) {
+                document.getElementById('feedback').innerHTML = `<span style="color: var(--correct-color);">✨ Correct! ✨</span><br>${q.explain}`;
+            } else {
+                document.getElementById('feedback').innerHTML = `<span style="color: var(--wrong-color);">💥 Review Needed!</span><br>${q.explain}`;
+            }
+        }
+
+        // Handle navigation buttons
+        document.getElementById('prev-btn').style.visibility = currentIdx === 0 ? 'hidden' : 'visible';
+        
+        // Re-render LaTeX math formulas using KaTeX
+        if (window.renderMathInElement) {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ]
+            });
+        }
     }
 
-    function selectOption(idx) {
-        if (selected) return;
-        selected = true;
+    function selectMCOption(idx) {
+        const q = questions[currentIdx];
+        answered[currentIdx] = idx;
+        if (idx === q.answer) {
+            scores[currentIdx] = 100;
+        } else {
+            scores[currentIdx] = 0;
+        }
+        showQuestion();
+    }
+
+    function submitTextAnswer() {
+        const input = document.getElementById('user-text-input').value.trim();
+        if (!input) return;
 
         const q = questions[currentIdx];
-        const buttons = document.getElementById('options').children;
+        const isCorrect = q.accepted.some(acc => acc.toLowerCase().replace(/\s+/g, '') === input.toLowerCase().replace(/\s+/g, ''));
+        
+        answered[currentIdx] = { userVal: input };
+        scores[currentIdx] = isCorrect ? 100 : 0;
+        showQuestion();
+    }
 
-        if (idx === q.answer) {
-            score += 100;
-            document.getElementById('score-num').innerText = score;
-            buttons[idx].classList.add('btn-correct');
-            document.getElementById('feedback').innerHTML = `<span style="color: var(--correct-color);">✨ Excellent! Correct! ✨</span><br>${q.explain}`;
-            document.getElementById('hero-status').innerText = '🧙‍♂️⚡';
-        } else {
-            buttons[idx].classList.add('btn-wrong');
-            buttons[q.answer].classList.add('btn-correct');
-            document.getElementById('feedback').innerHTML = `<span style="color: var(--wrong-color);">💥 Not quite!</span><br>${q.explain}`;
-            document.getElementById('hero-status').innerText = '🧙‍♂️💥';
+    function submitMatchingAnswer() {
+        const q = questions[currentIdx];
+        let userVals = [];
+        let allCorrect = true;
+
+        for (let i = 0; i < q.items.length; i++) {
+            const val = document.getElementById(`select-match-${i}`).value;
+            userVals.push(val);
+            if (val !== q.items[i].correct) {
+                allCorrect = false;
+            }
         }
 
-        for (let btn of buttons) {
-            btn.disabled = true;
-        }
+        answered[currentIdx] = { userVals: userVals };
+        scores[currentIdx] = allCorrect ? 100 : 0;
+        showQuestion();
+    }
 
-        document.getElementById('next-btn').classList.remove('hidden');
+    function prevQuestion() {
+        if (currentIdx > 0) {
+            currentIdx--;
+            showQuestion();
+        }
     }
 
     function nextQuestion() {
-        currentIdx++;
-        if (currentIdx < questions.length) {
+        if (currentIdx < questions.length - 1) {
+            currentIdx++;
             showQuestion();
         } else {
             endGame();
@@ -365,25 +571,23 @@
     function endGame() {
         document.getElementById('play-screen').classList.add('hidden');
         document.getElementById('end-screen').classList.remove('hidden');
-        document.getElementById('final-score').innerText = score;
+        
+        let totalScore = scores.reduce((a, b) => a + b, 0);
+        document.getElementById('final-score').innerText = totalScore;
 
         const msg = document.getElementById('final-message');
         const avatar = document.getElementById('final-avatar');
 
-        if (score === 1200) {
+        if (totalScore === 2000) {
             avatar.innerText = '👑';
-            msg.innerText = "Perfect Score! You are a Grand Master of Grade 6 Algebra!";
-        } else if (score >= 900) {
+            msg.innerText = "Mastery Level Achieved! You got a PERFECT score!";
+        } else if (totalScore >= 1500) {
             avatar.innerText = '🏆';
-            msg.innerText = "Great Job! You have strong algebra skills and passed the quest with flying colors!";
+            msg.innerText = "Great job! You showed strong understanding across Module 5!";
         } else {
             avatar.innerText = '🛡️';
-            msg.innerText = "Good effort! Review the notes again and retry to claim ultimate victory!";
+            msg.innerText = "Good effort! Go back through the questions to practice again.";
         }
-    }
-
-    function restartGame() {
-        startGame();
     }
 </script>
 
